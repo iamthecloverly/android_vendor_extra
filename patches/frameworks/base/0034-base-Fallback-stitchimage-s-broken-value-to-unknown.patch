@@ -1,0 +1,64 @@
+From 7664531c204dfbe4777511db534016e9b6040e4a Mon Sep 17 00:00:00 2001
+From: ender1324 <ender1324@abv.bg>
+Date: Thu, 4 Feb 2021 15:16:33 +0200
+Subject: [PATCH 34/34] base: Fallback stitchimage's broken value to unknown
+
+- For some reason stitchimage returns 9528, no idea why
+- A proper fix would be to fix it from the apk itself but "we dont do that here"
+- Thanks to kandnub for helping me find the core issue
+
+Fixes:
+02-03 22:05:46.956 10753 10753 E AndroidRuntime: java.lang.RuntimeException: Unable to create service com.asus.stitchimage.OverlayService: java.lang.IllegalArgumentException: Invalid usage 9528
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.app.ActivityThread.handleCreateService(ActivityThread.java:4198)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.app.ActivityThread.access$1500(ActivityThread.java:237)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1932)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:223)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7661)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime: Caused by: java.lang.IllegalArgumentException: Invalid usage 9528
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.media.AudioAttributes$Builder.setUsage(AudioAttributes.java:783)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.asus.stitchimage.f.g.b(Unknown Source:7)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.asus.stitchimage.f.t.a(Unknown Source:19)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.asus.stitchimage.OverlayService.B(Unknown Source:83)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at com.asus.stitchimage.OverlayService.onCreate(Unknown Source:73)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        at android.app.ActivityThread.handleCreateService(ActivityThread.java:4186)
+02-03 22:05:46.956 10753 10753 E AndroidRuntime:        ... 8 more
+Co-authored-by: Kandarp <kandnub@gmail.com>
+
+Signed-off-by: SamarV-121 <samarvispute121@gmail.com>
+Change-Id: I5cf566726e2f80b442646751eeefd507d3e1fced
+---
+ media/java/android/media/AudioAttributes.java | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/media/java/android/media/AudioAttributes.java b/media/java/android/media/AudioAttributes.java
+index c3fdc895..c91fd3d9 100644
+--- a/media/java/android/media/AudioAttributes.java
++++ b/media/java/android/media/AudioAttributes.java
+@@ -183,6 +183,10 @@ public final class AudioAttributes implements Parcelable {
+      * utterances.
+      */
+     public final static int USAGE_ASSISTANT = 16;
++    /**
++     * Usage value to use when stitchimage returns 9528 for some reason
++     */
++    public final static int USAGE_STITCH = 9528;
+     /**
+      * @hide
+      * Usage value to use for assistant voice interaction with remote caller on Cell and VoIP calls.
+@@ -773,6 +777,9 @@ public final class AudioAttributes implements Parcelable {
+                 case USAGE_ASSISTANT:
+                     mUsage = usage;
+                     break;
++                case USAGE_STITCH:
++                    mUsage = USAGE_UNKNOWN;
++                    break;
+                 default:
+                     throw new IllegalArgumentException("Invalid usage " + usage);
+             }
+-- 
+2.30.1
+
